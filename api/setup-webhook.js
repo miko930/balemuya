@@ -20,8 +20,8 @@ export default async function handler(req, res) {
       success: true,
       message: "Webhooks successfully registered with Telegram",
       urls: {
-        customer: `${webhookUrl}/api/webhook-customer`,
-        worker: `${webhookUrl}/api/webhook-worker`,
+        customer: `${cleanWebhookUrl}/api/webhook-customer`,
+        worker: `${cleanWebhookUrl}/api/webhook-worker`,
       },
     });
   } catch (error) {
