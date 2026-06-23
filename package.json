@@ -1,0 +1,25 @@
+{
+  "name": "fikir-fix-bot",
+  "version": "1.0.0",
+  "description": "FikirFix — Telegram home repair booking bot for Addis Ababa (in Amharic)",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "seed": "node src/db/seed.js",
+    "db:push": "npx prisma db push",
+    "db:studio": "npx prisma studio",
+    "dashboard": "node src/dashboard/server.js"
+  },
+  "dependencies": {
+    "@grammyjs/conversations": "^1.2.0",
+    "@prisma/client": "^5.0.0",
+    "dotenv": "^16.0.0",
+    "express": "^5.2.1",
+    "grammy": "^1.21.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.0.0"
+  }
+}

@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Customer {
+  id         Int      @id @default(autoincrement())
+  telegramId String   @unique
+  firstName  String
+  phone      String?
+  subCity    String?
+  createdAt  DateTime @default(now())
+  jobs       Job[]
+}
+
+model Worker {
+  id            Int      @id @default(autoincrement())
+  telegramId    String   @unique
+  firstName     String
+  phone         String?
+  category      String[] // ["plumber", "electrician", "painter", ...]
+  subCity       String?
+  isAvailable   Boolean  @default(false)
+  isVerified    Boolean  @default(false) // admin must verify via dashboard
+  rating        Float    @default(5.0)
+  jobsCompleted Int      @default(0)
+  createdAt     DateTime @default(now())
+  jobs          Job[]
+  ratings       Rating[]
+}
+
+model Job {
+  id          Int       @id @default(autoincrement())
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  customerId  Int
+  worker      Worker?   @relation(fields: [workerId], references: [id])
+  workerId    Int?
+  category    String
+  description String
+  address     String
+  subCity     String
+  locationLat Float?
+  locationLng Float?
+  urgency     String    // "asap" | "today" | "scheduled"
+  scheduledAt DateTime?
+  status      JobStatus @default(PENDING)
+  quotedPrice String?
+  finalPrice  Int?
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+  ratings     Rating[]
+}
+
+model Rating {
+  id         Int      @id @default(autoincrement())
+  job        Job      @relation(fields: [jobId], references: [id])
+  jobId      Int      @unique
+  worker     Worker   @relation(fields: [workerId], references: [id])
+  workerId   Int
+  score      Int      // 1–5
+  comment    String?
+  createdAt  DateTime @default(now())
+}
+
+enum JobStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
