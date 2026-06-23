@@ -337,15 +337,16 @@ app.get("/api/setup-webhook", async (req, res) => {
       return res.status(400).json({ error: "WEBHOOK_URL is not set" });
     }
 
-    await customerBot.api.setWebhook(`${webhookUrl}/api/webhook-customer`);
-    await workerBot.api.setWebhook(`${webhookUrl}/api/webhook-worker`);
+    const cleanWebhookUrl = webhookUrl.replace(/\/$/, "");
+    await customerBot.api.setWebhook(`${cleanWebhookUrl}/api/webhook-customer`);
+    await workerBot.api.setWebhook(`${cleanWebhookUrl}/api/webhook-worker`);
 
     res.json({
       success: true,
       message: "Webhooks registered",
       urls: {
-        customer: `${webhookUrl}/api/webhook-customer`,
-        worker: `${webhookUrl}/api/webhook-worker`,
+        customer: `${cleanWebhookUrl}/api/webhook-customer`,
+        worker: `${cleanWebhookUrl}/api/webhook-worker`,
       },
     });
   } catch (error) {

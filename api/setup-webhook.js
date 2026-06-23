@@ -11,9 +11,10 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "WEBHOOK_URL is not set in environment variables" });
     }
 
-    console.log(`Registering webhooks at URL: ${webhookUrl}`);
-    await getCustomerBot().api.setWebhook(`${webhookUrl}/api/webhook-customer`);
-    await getWorkerBot().api.setWebhook(`${webhookUrl}/api/webhook-worker`);
+    const cleanWebhookUrl = webhookUrl.replace(/\/$/, "");
+    console.log(`Registering webhooks at URL: ${cleanWebhookUrl}`);
+    await getCustomerBot().api.setWebhook(`${cleanWebhookUrl}/api/webhook-customer`);
+    await getWorkerBot().api.setWebhook(`${cleanWebhookUrl}/api/webhook-worker`);
 
     res.json({
       success: true,
