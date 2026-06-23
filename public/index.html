@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔧 FikirFix — Admin Dashboard</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon">🔧</span>
+        <div class="brand-text">
+          <h1>FikirFix</h1>
+          <span class="brand-tagline">Admin Control Panel</span>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="overview">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          Overview
+        </button>
+        <button class="nav-item" data-tab="jobs">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Bookings
+        </button>
+        <button class="nav-item" data-tab="workers">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Workers Directory
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar">A</div>
+          <div class="user-info">
+            <span class="user-name">FikirFix Admin</span>
+            <span class="user-role">Super Admin</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="main-header">
+        <div class="header-title-area">
+          <h2 id="page-title">Dashboard Overview</h2>
+          <p id="page-subtitle" class="text-muted">Real-time statistics & bookings tracking for Addis Ababa</p>
+        </div>
+        <div class="header-actions">
+          <button id="refresh-btn" class="btn btn-secondary">
+            <svg class="btn-icon animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            Sync Data
+          </button>
+        </div>
+      </header>
+
+      <!-- Panel: Overview -->
+      <section id="panel-overview" class="tab-panel active">
+        <!-- KPI Cards Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card glass">
+            <div class="kpi-icon-wrapper blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Total Bookings</span>
+              <h3 id="stat-total-jobs" class="kpi-value">-</h3>
+              <span class="kpi-trend positive">All time record</span>
+            </div>
+          </div>
+
+          <div class="kpi-card glass">
+            <div class="kpi-icon-wrapper orange">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Active Cases</span>
+              <h3 id="stat-active-jobs" class="kpi-value">-</h3>
+              <span class="kpi-trend warning">Currently in progress</span>
+            </div>
+          </div>
+
+          <div class="kpi-card glass">
+            <div class="kpi-icon-wrapper green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Gross Revenue</span>
+              <h3 id="stat-revenue" class="kpi-value">-</h3>
+              <span class="kpi-trend positive">ETB Completed jobs</span>
+            </div>
+          </div>
+
+          <div class="kpi-card glass">
+            <div class="kpi-icon-wrapper purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Avg Rating</span>
+              <h3 id="stat-rating" class="kpi-value">-</h3>
+              <span class="kpi-trend positive">Out of 5.0 stars</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Disputes Panel -->
+        <div class="dashboard-row">
+          <div class="panel-card glass full-width">
+            <div class="panel-card-header">
+              <div class="header-left">
+                <span class="header-icon error">⚠️</span>
+                <h3>Disputes & Open Issues</h3>
+              </div>
+              <span class="badge badge-error" id="dispute-count">0 unresolved</span>
+            </div>
+            <div class="panel-card-body">
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Job ID</th>
+                      <th>Category</th>
+                      <th>Customer Info</th>
+                      <th>Assigned Worker</th>
+                      <th>Address</th>
+                      <th>Reported At</th>
+                      <th>Price</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="disputes-table-body">
+                    <tr>
+                      <td colspan="8" class="text-center py-4">No active disputes found. Good job!</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Section -->
+        <div class="dashboard-row">
+          <div class="panel-card glass full-width">
+            <div class="panel-card-header">
+              <h3>Recent Bookings</h3>
+              <button class="btn btn-link" onclick="switchTab('jobs')">View All Bookings →</button>
+            </div>
+            <div class="panel-card-body">
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Job ID</th>
+                      <th>Category</th>
+                      <th>Customer</th>
+                      <th>Sub-City</th>
+                      <th>Urgency</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th>Price</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-jobs-table-body">
+                    <tr>
+                      <td colspan="8" class="text-center py-4 text-muted">Loading recent jobs...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel: Bookings -->
+      <section id="panel-jobs" class="tab-panel">
+        <div class="filter-bar glass">
+          <div class="filter-group">
+            <label class="filter-label">Filter Status:</label>
+            <div class="btn-group">
+              <button class="btn btn-filter active" data-status="">All</button>
+              <button class="btn btn-filter" data-status="PENDING">Pending</button>
+              <button class="btn btn-filter" data-status="ASSIGNED">Assigned</button>
+              <button class="btn btn-filter" data-status="IN_PROGRESS">In Progress</button>
+              <button class="btn btn-filter" data-status="COMPLETED">Completed</button>
+              <button class="btn btn-filter" data-status="CANCELLED">Cancelled</button>
+              <button class="btn btn-filter" data-status="DISPUTED">Disputed</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card glass full-width mt-4">
+          <div class="panel-card-body">
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Category</th>
+                    <th>Customer</th>
+                    <th>Worker</th>
+                    <th>Sub-City</th>
+                    <th>Urgency</th>
+                    <th>Quoted Price</th>
+                    <th>Final Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="all-jobs-table-body">
+                  <tr>
+                    <td colspan="10" class="text-center py-4 text-muted">Loading bookings...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel: Workers -->
+      <section id="panel-workers" class="tab-panel">
+        <!-- Pending Workers Section -->
+        <div class="panel-card glass full-width" style="margin-bottom: 28px;">
+          <div class="panel-card-header">
+            <div class="header-left">
+              <span class="header-icon">🆕</span>
+              <h3>Pending Workers (Awaiting Activation)</h3>
+            </div>
+            <span class="badge badge-pending" id="pending-count">0 pending</span>
+          </div>
+          <div class="panel-card-body">
+            <p class="text-muted" style="font-size: 13px; margin-bottom: 16px;">Workers who messaged <strong>/start</strong> on the worker bot appear here. Complete their profile to activate them.</p>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name (from Telegram)</th>
+                    <th>Telegram ID</th>
+                    <th>Registered At</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="pending-workers-body">
+                  <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">No pending workers. Tell workers to message /start on the worker bot.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Workers Grid -->
+        <div class="filter-bar glass" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <span class="filter-label" style="font-size: 16px; font-weight: 600;">Active Staff</span>
+        </div>
+        <div class="workers-grid" id="workers-list-grid">
+          <div class="text-center py-4 text-muted full-width">Loading workers data...</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Job Details Modal -->
+  <div id="job-modal" class="modal-overlay">
+    <div class="modal-card glass">
+      <div class="modal-header">
+        <h3>Booking Details #<span id="modal-job-id">-</span></h3>
+        <button class="close-btn" onclick="closeModal('job-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="details-grid">
+          <div class="detail-group">
+            <span class="detail-label">Status</span>
+            <span class="detail-value"><span class="badge" id="modal-job-status">-</span></span>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Category</span>
+            <span class="detail-value" id="modal-job-category">-</span>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Urgency</span>
+            <span class="detail-value" id="modal-job-urgency">-</span>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Created At</span>
+            <span class="detail-value" id="modal-job-date">-</span>
+          </div>
+        </div>
+
+        <hr class="modal-divider">
+
+        <h4 class="section-title">Client Details</h4>
+        <div class="details-grid">
+          <div class="detail-group">
+            <span class="detail-label">Name</span>
+            <span class="detail-value" id="modal-client-name">-</span>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Phone</span>
+            <span class="detail-value" id="modal-client-phone">-</span>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Address</span>
+            <span class="detail-value" id="modal-job-address">-</span>
+          </div>
+        </div>
+
+        <hr class="modal-divider">
+
+        <h4 class="section-title">Worker Details</h4>
+        <div class="details-grid">
+          <div class="detail-group">
+            <span class="detail-label">Name</span>
+            <span class="detail-value" id="modal-worker-name">-</span>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Phone</span>
+            <span class="detail-value" id="modal-worker-phone">-</span>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Sub-City</span>
+            <span class="detail-value" id="modal-worker-subcity">-</span>
+          </div>
+        </div>
+
+        <hr class="modal-divider">
+
+        <h4 class="section-title">Job Description</h4>
+        <div class="description-bubble" id="modal-job-description">-</div>
+
+        <hr class="modal-divider">
+
+        <h4 class="section-title">Admin Controls</h4>
+        <div class="admin-controls-row">
+          <div class="control-group">
+            <label for="control-status">Override Status:</label>
+            <select id="control-status" class="form-select">
+              <option value="PENDING">Pending</option>
+              <option value="ASSIGNED">Assigned</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="CANCELLED">Cancelled</option>
+              <option value="DISPUTED">Disputed</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="control-worker">Assign Worker:</label>
+            <select id="control-worker" class="form-select">
+              <option value="">-- No Worker --</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="control-price">Final Price (ETB):</label>
+            <input type="number" id="control-price" class="form-input" placeholder="Price in ETB">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('job-modal')">Cancel</button>
+        <button class="btn btn-primary" id="save-job-btn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activate Worker Modal -->
+  <div id="activate-worker-modal" class="modal-overlay">
+    <div class="modal-card glass" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3>Activate Worker — <span id="activate-worker-name">-</span></h3>
+        <button class="close-btn" onclick="closeModal('activate-worker-modal')">&times;</button>
+      </div>
+      <form id="activate-worker-form">
+        <input type="hidden" id="activate-worker-id">
+        <div class="modal-body">
+          <div class="details-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="control-group">
+              <label for="activate-worker-tg-display">Telegram ID</label>
+              <input type="text" id="activate-worker-tg-display" class="form-input" readonly disabled style="opacity:0.6;">
+            </div>
+            <div class="control-group">
+              <label for="activate-worker-phone">Phone Number</label>
+              <input type="tel" id="activate-worker-phone" class="form-input" placeholder="e.g. +2519..." required>
+            </div>
+            <div class="control-group" style="grid-column: span 2;">
+              <label for="activate-worker-subcity">Sub-City Location</label>
+              <select id="activate-worker-subcity" class="form-select" required>
+                <option value="" disabled selected>Select Sub-City</option>
+                <option value="ቦሌ">ቦሌ (Bole)</option>
+                <option value="የካ">የካ (Yeka)</option>
+                <option value="ቂርቆስ">ቂርቆስ (Kirkos)</option>
+                <option value="ጉለሌ">ጉለሌ (Gullele)</option>
+                <option value="ኮልፌ">ኮልፌ (Kolfe)</option>
+                <option value="አቃቂ">አቃቂ (Akaki-Kality)</option>
+                <option value="አዲስ ከተማ">አዲስ ከተማ (Addis Ketema)</option>
+                <option value="ልደታ">ልደታ (Lideta)</option>
+                <option value="አራዳ">አራዳ (Arada)</option>
+                <option value="ንፋስ ስልክ">ንፋስ ስልክ (Nifas Silk-Lafto)</option>
+                <option value="ለሚ ኩራ">ለሚ ኩራ (Lemi Kura)</option>
+              </select>
+            </div>
+          </div>
+
+          <hr class="modal-divider">
+
+          <h4 class="section-title">Specialty Categories (Select at least one)</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+              <input type="checkbox" name="activate-specialty" value="plumber" style="width: 18px; height: 18px; accent-color: var(--color-purple);">
+              🔧 ፕሎምቢንግ (Plumbing)
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+              <input type="checkbox" name="activate-specialty" value="electrician" style="width: 18px; height: 18px; accent-color: var(--color-purple);">
+              ⚡ ኤሌክትሪሻን (Electrical)
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+              <input type="checkbox" name="activate-specialty" value="painter" style="width: 18px; height: 18px; accent-color: var(--color-purple);">
+              🎨 ቀለም ቀቢ (Painting)
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+              <input type="checkbox" name="activate-specialty" value="carpenter" style="width: 18px; height: 18px; accent-color: var(--color-purple);">
+              🪚 አናጢ (Carpentry)
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+              <input type="checkbox" name="activate-specialty" value="ac" style="width: 18px; height: 18px; accent-color: var(--color-purple);">
+              ❄️ ኤ/ሲ ጥገና (AC Repair)
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+              <input type="checkbox" name="activate-specialty" value="handyman" style="width: 18px; height: 18px; accent-color: var(--color-purple);">
+              🔩 አጠቃላይ ጥገና (General Repair)
+            </label>
+          </div>
+
+          <div id="activate-error-msg" style="color: var(--color-rose); font-size: 13px; margin-top: 16px; display: none;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('activate-worker-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">✅ Activate Worker</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+</html>

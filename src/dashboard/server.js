@@ -11,7 +11,6 @@ const { customerBot, workerBot } = getBots();
 const customerBotApi = customerBot.api;
 const workerBotApi = workerBot.api;
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -19,7 +18,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+
+// Serve dashboard static files from root /public folder
+const publicDir = path.join(__dirname, "..", "..", "public");
+app.use(express.static(publicDir));
 
 // ── GET /api/stats ───────────────────────────────────────────
 app.get("/api/stats", async (req, res) => {
@@ -60,7 +62,7 @@ app.get("/api/stats", async (req, res) => {
   }
 });
 
-// ── GET /api/jobs ────────────────────────────────────────────
+// ── GET /api/jobs and PATCH /api/jobs?id=X ────────────────────
 app.get("/api/jobs", async (req, res) => {
   try {
     const { status } = req.query;
@@ -82,10 +84,13 @@ app.get("/api/jobs", async (req, res) => {
   }
 });
 
-// ── PATCH /api/jobs/:id ────────────────────────────────────────
-app.patch("/api/jobs/:id", async (req, res) => {
+app.patch("/api/jobs", async (req, res) => {
   try {
-    const jobId = parseInt(req.params.id, 10);
+    const jobId = parseInt(req.query.id, 10);
+    if (!jobId) {
+      return res.status(400).json({ error: "Missing job id query parameter" });
+    }
+
     const { status, finalPrice, workerId } = req.body;
 
     const data = {};
@@ -108,7 +113,6 @@ app.patch("/api/jobs/:id", async (req, res) => {
       include: { customer: true, worker: true },
     });
 
-    // Send notifications to client/worker in the background
     handleJobUpdateNotifications(oldJob, updatedJob).catch((err) => {
       console.error("Failed to run status change notifications:", err);
     });
@@ -120,14 +124,90 @@ app.patch("/api/jobs/:id", async (req, res) => {
   }
 });
 
-// Helper function to send Telegram status/assignment notifications
+// ── GET /api/workers, PATCH /api/workers?id=X, PUT /api/workers?id=X ──
+app.get("/api/workers", async (req, res) => {
+  try {
+    const workers = await prisma.worker.findMany({
+      orderBy: { firstName: "asc" },
+      include: {
+        ratings: {
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        },
+      },
+    });
+    res.json(workers);
+  } catch (error) {
+    console.error("Failed to fetch workers:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.patch("/api/workers", async (req, res) => {
+  try {
+    const workerId = parseInt(req.query.id, 10);
+    if (!workerId) {
+      return res.status(400).json({ error: "Missing worker id query parameter" });
+    }
+
+    const { isAvailable, isVerified } = req.body;
+
+    const data = {};
+    if (isAvailable !== undefined) data.isAvailable = isAvailable;
+    if (isVerified !== undefined) data.isVerified = isVerified;
+
+    const updatedWorker = await prisma.worker.update({
+      where: { id: workerId },
+      data,
+    });
+
+    res.json(updatedWorker);
+  } catch (error) {
+    console.error("Failed to update worker:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.put("/api/workers", async (req, res) => {
+  try {
+    const workerId = parseInt(req.query.id, 10);
+    if (!workerId) {
+      return res.status(400).json({ error: "Missing worker id query parameter" });
+    }
+
+    const { firstName, phone, subCity, category } = req.body;
+
+    if (!phone || !subCity || !category || !Array.isArray(category) || category.length === 0) {
+      return res.status(400).json({ error: "Phone, sub-city, and at least one specialty are required" });
+    }
+
+    const data = {
+      phone: phone.trim(),
+      subCity: subCity.trim(),
+      category,
+      isVerified: true,
+      isAvailable: true,
+    };
+    if (firstName) data.firstName = firstName.trim();
+
+    const updatedWorker = await prisma.worker.update({
+      where: { id: workerId },
+      data,
+    });
+
+    res.json(updatedWorker);
+  } catch (error) {
+    console.error("Failed to activate worker:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── Telegram Notification Helper ──────────────────────────────
 async function handleJobUpdateNotifications(oldJob, newJob) {
   const statusChanged = oldJob.status !== newJob.status;
   const workerChanged = oldJob.workerId !== newJob.workerId;
 
-  // Case 1: Worker changed (assigned or reassigned)
   if (workerChanged) {
-    // Notify the old worker (if there was one) that they were removed
     if (oldJob.worker) {
       try {
         await workerBotApi.sendMessage(
@@ -140,7 +220,6 @@ async function handleJobUpdateNotifications(oldJob, newJob) {
       }
     }
 
-    // Notify the new worker that they are assigned
     if (newJob.worker) {
       try {
         await workerBotApi.sendMessage(
@@ -158,7 +237,6 @@ async function handleJobUpdateNotifications(oldJob, newJob) {
       }
     }
 
-    // Notify the customer about the new worker assignment
     if (newJob.customer) {
       try {
         let msg = "";
@@ -178,9 +256,7 @@ async function handleJobUpdateNotifications(oldJob, newJob) {
     }
   }
 
-  // Case 2: Status changed (but worker did not change)
   if (statusChanged && !workerChanged) {
-    // Notify customer
     if (newJob.customer) {
       let customerMsg = "";
       switch (newJob.status) {
@@ -219,7 +295,6 @@ async function handleJobUpdateNotifications(oldJob, newJob) {
       }
     }
 
-    // Notify worker
     if (newJob.worker) {
       let workerMsg = "";
       switch (newJob.status) {
@@ -247,105 +322,31 @@ async function handleJobUpdateNotifications(oldJob, newJob) {
   }
 }
 
-
-// ── GET /api/workers ──────────────────────────────────────────
-app.get("/api/workers", async (req, res) => {
-  try {
-    const workers = await prisma.worker.findMany({
-      orderBy: { firstName: "asc" },
-      include: {
-        ratings: {
-          orderBy: { createdAt: "desc" },
-          take: 5,
-        },
-      },
-    });
-    res.json(workers);
-  } catch (error) {
-    console.error("Failed to fetch workers:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// ── PATCH /api/workers/:id ────────────────────────────────────
-app.patch("/api/workers/:id", async (req, res) => {
-  try {
-    const workerId = parseInt(req.params.id, 10);
-    const { isAvailable, isVerified } = req.body;
-
-    const data = {};
-    if (isAvailable !== undefined) data.isAvailable = isAvailable;
-    if (isVerified !== undefined) data.isVerified = isVerified;
-
-    const updatedWorker = await prisma.worker.update({
-      where: { id: workerId },
-      data,
-    });
-
-    res.json(updatedWorker);
-  } catch (error) {
-    console.error("Failed to update worker:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// ── PUT /api/workers/:id/activate — Complete profile & verify ──
-app.put("/api/workers/:id/activate", async (req, res) => {
-  try {
-    const workerId = parseInt(req.params.id, 10);
-    const { firstName, phone, subCity, category } = req.body;
-
-    if (!phone || !subCity || !category || !Array.isArray(category) || category.length === 0) {
-      return res.status(400).json({ error: "Phone, sub-city, and at least one specialty are required" });
-    }
-
-    const data = {
-      phone: phone.trim(),
-      subCity: subCity.trim(),
-      category,
-      isVerified: true,
-      isAvailable: true,
-    };
-    if (firstName) data.firstName = firstName.trim();
-
-    const updatedWorker = await prisma.worker.update({
-      where: { id: workerId },
-      data,
-    });
-
-    res.json(updatedWorker);
-  } catch (error) {
-    console.error("Failed to activate worker:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// Webhook endpoints
+// ── Webhook endpoints (only when USE_WEBHOOK is true) ─────────
 if (process.env.USE_WEBHOOK === "true") {
   console.log("ℹ️ Webhook mode enabled. Registering endpoints...");
-  app.use("/webhook/customer", webhookCallback(customerBot, "express"));
-  app.use("/webhook/worker", webhookCallback(workerBot, "express"));
+  app.use("/api/webhook-customer", webhookCallback(customerBot, "express"));
+  app.use("/api/webhook-worker", webhookCallback(workerBot, "express"));
 }
 
-// Secure webhook setup endpoint
+// Webhook setup endpoint
 app.get("/api/setup-webhook", async (req, res) => {
   try {
     const webhookUrl = process.env.WEBHOOK_URL;
     if (!webhookUrl) {
-      return res.status(400).json({ error: "WEBHOOK_URL is not set in environment variables" });
+      return res.status(400).json({ error: "WEBHOOK_URL is not set" });
     }
 
-    console.log(`Registering webhooks at URL: ${webhookUrl}`);
-    await customerBot.api.setWebhook(`${webhookUrl}/webhook/customer`);
-    await workerBot.api.setWebhook(`${webhookUrl}/webhook/worker`);
+    await customerBot.api.setWebhook(`${webhookUrl}/api/webhook-customer`);
+    await workerBot.api.setWebhook(`${webhookUrl}/api/webhook-worker`);
 
     res.json({
       success: true,
-      message: "Webhooks successfully registered with Telegram",
+      message: "Webhooks registered",
       urls: {
-        customer: `${webhookUrl}/webhook/customer`,
-        worker: `${webhookUrl}/webhook/worker`
-      }
+        customer: `${webhookUrl}/api/webhook-customer`,
+        worker: `${webhookUrl}/api/webhook-worker`,
+      },
     });
   } catch (error) {
     console.error("Failed to setup webhooks:", error);
@@ -353,12 +354,12 @@ app.get("/api/setup-webhook", async (req, res) => {
   }
 });
 
-// Fallback index.html router
+// Fallback — serve index.html for SPA
 app.get("/*splat", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(publicDir, "index.html"));
 });
 
-// Export app for importing in index.js and api/index.js
+// Export app for imports
 export { app };
 
 // Only listen if this file is run directly
@@ -367,4 +368,3 @@ if (process.argv[1] && (process.argv[1] === fileURLToPath(import.meta.url) || pr
     console.log(`🚀 FikirFix Admin Dashboard is running at http://localhost:${PORT}`);
   });
 }
-
