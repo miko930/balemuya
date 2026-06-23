@@ -1,4 +1,12 @@
 import { webhookCallback } from "grammy";
-import { workerBot } from "./_shared.js";
+import { getWorkerBot } from "./_shared.js";
 
-export default webhookCallback(workerBot, "http");
+let callback;
+
+export default async function handler(req, res) {
+  if (!callback) {
+    const workerBot = getWorkerBot();
+    callback = webhookCallback(workerBot, "http");
+  }
+  return callback(req, res);
+}

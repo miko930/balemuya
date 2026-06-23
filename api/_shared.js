@@ -2,16 +2,30 @@ import { prisma } from "../src/db/client.js";
 import { getBots } from "../src/bot/init.js";
 import { askForRating } from "../src/handlers/customer.js";
 
-const { customerBot, workerBot } = getBots();
-const customerBotApi = customerBot.api;
-const workerBotApi = workerBot.api;
+export { prisma, askForRating };
 
-export { prisma, customerBot, workerBot, customerBotApi, workerBotApi, askForRating };
+export function getCustomerBot() {
+  return getBots().customerBot;
+}
+
+export function getWorkerBot() {
+  return getBots().workerBot;
+}
+
+export function getCustomerBotApi() {
+  return getBots().customerBot.api;
+}
+
+export function getWorkerBotApi() {
+  return getBots().workerBot.api;
+}
 
 // Helper function to send Telegram status/assignment notifications
 export async function handleJobUpdateNotifications(oldJob, newJob) {
   const statusChanged = oldJob.status !== newJob.status;
   const workerChanged = oldJob.workerId !== newJob.workerId;
+  const customerBotApi = getCustomerBotApi();
+  const workerBotApi = getWorkerBotApi();
 
   // Case 1: Worker changed (assigned or reassigned)
   if (workerChanged) {

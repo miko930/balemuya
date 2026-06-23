@@ -1,4 +1,4 @@
-import { customerBot, workerBot } from "./_shared.js";
+import { getCustomerBot, getWorkerBot } from "./_shared.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
@@ -12,8 +12,8 @@ export default async function handler(req, res) {
     }
 
     console.log(`Registering webhooks at URL: ${webhookUrl}`);
-    await customerBot.api.setWebhook(`${webhookUrl}/api/webhook-customer`);
-    await workerBot.api.setWebhook(`${webhookUrl}/api/webhook-worker`);
+    await getCustomerBot().api.setWebhook(`${webhookUrl}/api/webhook-customer`);
+    await getWorkerBot().api.setWebhook(`${webhookUrl}/api/webhook-worker`);
 
     res.json({
       success: true,
