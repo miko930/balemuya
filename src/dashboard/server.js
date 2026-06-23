@@ -3,11 +3,14 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { prisma } from "../db/client.js";
 import "dotenv/config";
-import { Api } from "grammy";
+import { webhookCallback } from "grammy";
 import { askForRating } from "../handlers/customer.js";
+import { getBots } from "../bot/init.js";
 
-const customerBotApi = new Api(process.env.BOT_TOKEN);
-const workerBotApi = new Api(process.env.WORKER_BOT_TOKEN);
+const { customerBot, workerBot } = getBots();
+const customerBotApi = customerBot.api;
+const workerBotApi = workerBot.api;
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -317,11 +320,51 @@ app.put("/api/workers/:id/activate", async (req, res) => {
   }
 });
 
+// Webhook endpoints
+if (process.env.USE_WEBHOOK === "true") {
+  console.log("ℹ️ Webhook mode enabled. Registering endpoints...");
+  app.use("/webhook/customer", webhookCallback(customerBot, "express"));
+  app.use("/webhook/worker", webhookCallback(workerBot, "express"));
+}
+
+// Secure webhook setup endpoint
+app.get("/api/setup-webhook", async (req, res) => {
+  try {
+    const webhookUrl = process.env.WEBHOOK_URL;
+    if (!webhookUrl) {
+      return res.status(400).json({ error: "WEBHOOK_URL is not set in environment variables" });
+    }
+
+    console.log(`Registering webhooks at URL: ${webhookUrl}`);
+    await customerBot.api.setWebhook(`${webhookUrl}/webhook/customer`);
+    await workerBot.api.setWebhook(`${webhookUrl}/webhook/worker`);
+
+    res.json({
+      success: true,
+      message: "Webhooks successfully registered with Telegram",
+      urls: {
+        customer: `${webhookUrl}/webhook/customer`,
+        worker: `${webhookUrl}/webhook/worker`
+      }
+    });
+  } catch (error) {
+    console.error("Failed to setup webhooks:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Fallback index.html router
 app.get("/*splat", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 FikirFix Admin Dashboard is running at http://localhost:${PORT}`);
-});
+// Export app for importing in index.js and api/index.js
+export { app };
+
+// Only listen if this file is run directly
+if (process.argv[1] && (process.argv[1] === fileURLToPath(import.meta.url) || process.argv[1].endsWith("server.js"))) {
+  app.listen(PORT, () => {
+    console.log(`🚀 FikirFix Admin Dashboard is running at http://localhost:${PORT}`);
+  });
+}
+

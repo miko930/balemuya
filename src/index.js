@@ -1,29 +1,36 @@
 import "dotenv/config";
-import { createCustomerBot } from "./bot/customerBot.js";
-import { createWorkerBot }   from "./bot/workerBot.js";
-import { setWorkerBotApi }   from "./bot/shared.js";
+import { getBots } from "./bot/init.js";
+import { app } from "./dashboard/server.js";
 
 async function main() {
   console.log("🔧 FikirFix starting...");
 
-  // Start customer bot first so we can pass its API to worker bot
-  const customerBot = createCustomerBot();
-  const workerBot   = createWorkerBot(customerBot.api);
+  const { customerBot, workerBot } = getBots();
 
-  // Share worker bot API so customer-side handlers can notify workers
-  setWorkerBotApi(workerBot.api);
+  // If webhook mode is disabled (default/local), start bots in long-polling mode
+  if (process.env.USE_WEBHOOK === "true") {
+    console.log("ℹ️ Webhook mode enabled. Bots will receive updates via Express endpoints.");
+  } else {
+    console.log("ℹ️ Long Polling mode enabled. Running bots sequentially...");
+    
+    customerBot.start({
+      onStart: () => console.log("✅ Customer bot (@fixit43bot) is running (Long Polling)"),
+    });
 
-  // Run both bots (start sequentially to avoid network race)
-  customerBot.start({
-    onStart: () => console.log("✅ Customer bot (@fixit43bot) is running"),
-  });
+    workerBot.start({
+      onStart: () => console.log("✅ Worker bot (@workerfix43bot) is running (Long Polling)"),
+    });
+  }
 
-  workerBot.start({
-    onStart: () => console.log("✅ Worker bot (@workerfix43bot) is running"),
+  // Start the unified dashboard Express server
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`🚀 FikirFix unified server & dashboard running at http://localhost:${PORT}`);
   });
 }
 
 main().catch((err) => {
-  console.error("Fatal error:", err);
+  console.error("Fatal error during startup:", err);
   process.exit(1);
 });
+

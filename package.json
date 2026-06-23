@@ -5,8 +5,10 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
+    "build": "prisma generate",
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
+
     "seed": "node src/db/seed.js",
     "db:push": "npx prisma db push",
     "db:studio": "npx prisma studio",
